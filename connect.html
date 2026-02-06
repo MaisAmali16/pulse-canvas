@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Connect – Pulse Canvas</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html">
+        <span class="title">Pulse Canvas</span>
+        <span class="tag">Two-person empathy study</span>
+      </a>
+
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="instructions.html" class="primary">Start</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Connect With Your Partner</h1>
+    <p class="small">
+      Choose your comfort settings, then create a session code or join one.
+    </p>
+
+    <div class="panel">
+      <label>
+        Do you prefer a sound-free experience?
+        <select id="soundPref">
+          <option value="sound">No</option>
+          <option value="silent">Yes</option>
+        </select>
+      </label>
+
+      <hr>
+
+      <div class="row">
+        <button id="createBtn">Create Session</button>
+        <input id="sessionCode" placeholder="Enter Session Code" />
+        <button id="joinBtn">Join Session</button>
+      </div>
+
+      <p id="status" class="small" style="margin-top:14px;"></p>
+    </div>
+
+    <!-- Firebase compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <!-- Your Firebase init -->
+    <script src="js/firebase.js"></script>
+
+    <!-- Your app logic -->
+    <script src="js/auth.js"></script>
+    <script src="js/session.js"></script>
+  </main>
+
+</body>
+</html>
