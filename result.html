@@ -29,6 +29,22 @@
     <h1>Your conversation buddy’s screen</h1>
     <p class="small" id="meta"></p>
 
+    <!-- Call controls -->
+    <div class="card" style="margin: 14px 0;">
+      <div class="row" style="gap:10px; flex-wrap:wrap;">
+        <button id="btnStartAudio" class="btn">Enable Audio / Start Call</button>
+        <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
+        <button id="btnHangup" class="btn danger" disabled>Hang Up</button>
+      </div>
+      <p class="small" id="callStatus" style="margin-top:10px;">Status: idle</p>
+      <p class="small" style="opacity:0.85; margin-top:6px;">
+        Tip: use closed-back headphones to reduce voice bleed.
+      </p>
+    </div>
+
+    <!-- Remote audio plays here -->
+    <audio id="remoteAudio" autoplay playsinline></audio>
+
     <div class="screen">
       <iframe
         id="artFrame"
@@ -43,21 +59,32 @@
     </div>
   </main>
 
-  <!-- SCRIPT -->
+  <!-- Firebase SDKs (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <!-- Your Firebase init -->
+  <script src="js/firebase.js"></script>
+
+  <!-- WebRTC call + page logic -->
+  <script src="js/result-call.js"></script>
+
   <script>
-    // Read session info (still useful for later)
+    // Keep your existing embed behavior
     const params = new URLSearchParams(window.location.search);
     const session = params.get("session") || "";
 
-    // Show session code if present
     const meta = document.getElementById("meta");
-    if (session) {
-      meta.textContent = `Session: ${session}`;
-    }
+    if (session) meta.textContent = `Session: ${session}`;
+    else meta.textContent = "No session code found. Open this page with ?session=YOURCODE";
 
     // TEMPORARY shared p5 sketch for both participants
-    const frame = document.getElementById("artFrame");
-    frame.src = "https://editor.p5js.org/Hana_Namdar/full/D814zdJEF";
+    document.getElementById("artFrame").src =
+      "https://editor.p5js.org/Hana_Namdar/full/D814zdJEF";
+
+    // Pass session into the call script
+    window.__PULSE_SESSION__ = session;
   </script>
 
 </body>
