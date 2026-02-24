@@ -7,12 +7,10 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="index.html">
         <span class="title">Pulse Canvas</span>
-        <span class="tag">Two-person empathy study</span>
       </a>
 
       <nav>
@@ -24,15 +22,29 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main>
     <h1>Your conversation buddy’s screen</h1>
     <p class="small" id="meta"></p>
 
+    <!-- Shared Topic Display -->
+    <div class="card" style="margin: 14px 0;">
+      <h2 style="margin:0 0 6px 0;">Your Topic</h2>
+      <div id="topicText" style="font-size:1.05rem; line-height:1.6; color:rgba(255,255,255,0.92);">
+        Loading topic…
+      </div>
+      <p id="topicStatus" class="small" style="margin-top:10px;">&nbsp;</p>
+      <p class="small" style="margin-top:8px; opacity:0.85;">
+        If no topic is shown, go back and select one before starting.
+      </p>
+      <div class="row" style="margin-top:12px;">
+        <a href="topics.html" class="btn secondary">Back to Topics</a>
+      </div>
+    </div>
+
     <!-- Call controls -->
     <div class="card" style="margin: 14px 0;">
       <div class="row" style="gap:10px; flex-wrap:wrap;">
-        <button id="btnStartAudio" class="btn">Enable Audio / Start Call</button>
+        <button id="btnStartAudio" class="btn" disabled>Enable Audio / Start Call</button>
         <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
         <button id="btnHangup" class="btn danger" disabled>Hang Up</button>
       </div>
@@ -42,7 +54,6 @@
       </p>
     </div>
 
-    <!-- Remote audio plays here -->
     <audio id="remoteAudio" autoplay playsinline></audio>
 
     <div class="screen">
@@ -64,28 +75,27 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <!-- Your Firebase init -->
   <script src="js/firebase.js"></script>
 
-  <!-- WebRTC call + page logic -->
-  <script src="js/result-call.js"></script>
-
+  <!-- Set session BEFORE scripts -->
   <script>
-    // Keep your existing embed behavior
     const params = new URLSearchParams(window.location.search);
     const session = params.get("session") || "";
 
     const meta = document.getElementById("meta");
-    if (session) meta.textContent = `Session: ${session}`;
-    else meta.textContent = "No session code found. Open this page with ?session=YOURCODE";
+    meta.textContent = session
+      ? `Session: ${session}`
+      : "No session code found. Open this page through Connect.";
+
+    window.__PULSE_SESSION__ = session;
 
     // TEMPORARY shared p5 sketch for both participants
-    document.getElementById("artFrame").src =
-      "https://editor.p5js.org/Hana_Namdar/full/D814zdJEF";
-
-    // Pass session into the call script
-    window.__PULSE_SESSION__ = session;
+    const frame = document.getElementById("artFrame");
+    if (frame) frame.src = "https://editor.p5js.org/Hana_Namdar/full/D814zdJEF";
   </script>
+
+  <script src="js/result-call.js"></script>
+  <script src="js/topic-sync.js"></script>
 
 </body>
 </html>

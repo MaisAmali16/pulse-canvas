@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Topic Selection – Pulse Canvas</title>
+  <title>Topic Generator – Pulse Canvas</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
   <header class="site-header">
     <div class="header-inner">
-      <a class="brand" href="index.html"><span class="title">Pulse Canvas</span><span class="tag">Two-person empathy study</span></a>
+      <a class="brand" href="index.html">
+        <span class="title">Pulse Canvas</span>
+      </a>
       <nav>
         <a href="index.html">Home</a>
         <a href="about.html">About</a>
@@ -20,46 +22,42 @@
   </header>
 
   <main>
-    <h1>Topic Selection</h1>
-    <p>
-      You’re welcome to pick any topic you’d like to talk about. If you prefer, you can also choose from the list below.
-    </p>
+    <h1>Topic Generator</h1>
 
-    <h2>Memory & Nostalgia</h2>
     <div class="panel">
-      <p class="small" style="margin-top:0;">Warmth, loss, reflection, comfort, regrets</p>
+      <h2 style="margin-top:0;">How this works</h2>
       <ul class="small" style="line-height:1.7; margin:0;">
-        <li>What’s a memory you wish you could relive? Why?</li>
-        <li>Do you think memories change over time, or do we change around them?</li>
-        <li>What sound, smell, or image brings you back to a different version of yourself?</li>
-        <li>If you could forget one memory, would you?</li>
-        <li>How does nostalgia feel in your body?</li>
+        <li>One person generates a topic.</li>
+        <li>When you both agree, click <b>Use this topic</b>.</li>
+        <li>The chosen topic will appear again for both of you after you join the same session.</li>
       </ul>
     </div>
 
-    <!-- Repeat the same pattern for each category… -->
+    <div class="panel" style="margin-top:16px;">
+      <h2 style="margin-top:0;">Generate a topic</h2>
+
+      <div id="generatedTopic"
+           style="font-size:1.15rem; line-height:1.6; color:rgba(255,255,255,0.92); margin:12px 0 14px;">
+        Click “Generate Topic” to begin.
+      </div>
+
+      <div class="row" style="gap:10px; flex-wrap:wrap;">
+        <button id="generateBtn" class="btn" type="button">Generate Topic</button>
+        <button id="confirmBtn" class="btn secondary" type="button" disabled>Use this topic</button>
+      </div>
+
+      <p id="topicStatus" class="small" style="margin-top:12px; opacity:0.85;">
+        &nbsp;
+      </p>
+    </div>
 
     <div class="row" style="margin-top:18px;">
-      <a href="conversation.html" class="btn">Next</a>
+      <a href="conversation.html" id="nextBtn" class="btn" aria-disabled="true">Next</a>
       <a href="instructions.html" class="btn secondary">Back</a>
     </div>
 
-    <!-- ===== Automatic Topic Generator (added) ===== -->
-<div class="panel" style="margin-top:28px;">
-  <h2 style="margin-top:0;">Generate a Random Topic</h2>
-  <p class="small" style="margin-top:0;">Click to get a topic instantly (good if you don’t want to choose from the list).</p>
-
-  <div id="generatedTopic"
-       style="font-size:1.15rem; line-height:1.6; color:rgba(255,255,255,0.9); margin:12px 0 14px;">
-    Click “Generate Topic” to begin.
-  </div>
-
-  <button id="generateBtn" class="btn">Generate Topic</button>
-</div>
-
-<script src="js/generator.js" defer></script>
-<!-- ===== End Topic Generator ===== -->
-
+    <script src="js/generator.js" defer></script>
   </main>
+
 </body>
 </html>
