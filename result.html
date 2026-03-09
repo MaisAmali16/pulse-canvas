@@ -26,76 +26,76 @@
     <h1>Your conversation buddy’s screen</h1>
     <p class="small" id="meta"></p>
 
-    <!-- Shared Topic Display -->
     <div class="card" style="margin: 14px 0;">
       <h2 style="margin:0 0 6px 0;">Your Topic</h2>
       <div id="topicText" style="font-size:1.05rem; line-height:1.6; color:rgba(255,255,255,0.92);">
         Loading topic…
       </div>
       <p id="topicStatus" class="small" style="margin-top:10px;">&nbsp;</p>
-      <p class="small" style="margin-top:8px; opacity:0.85;">
-        If no topic is shown, go back and select one before starting.
-      </p>
-      <div class="row" style="margin-top:12px;">
-        <a href="topics.html" class="btn secondary">Back to Topics</a>
-      </div>
     </div>
 
-    <!-- Call controls -->
-    <div class="card" style="margin: 14px 0;">
-      <div class="row" style="gap:10px; flex-wrap:wrap;">
-        <button id="btnStartAudio" class="btn" disabled>Enable Audio / Start Call</button>
-        <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
-        <button id="btnHangup" class="btn danger" disabled>Hang Up</button>
-      </div>
-      <p class="small" id="callStatus" style="margin-top:10px;">Status: idle</p>
-      <p class="small" style="opacity:0.85; margin-top:6px;">
-        Tip: use closed-back headphones to reduce voice bleed.
-      </p>
+    <div class="row" style="margin-bottom: 20px;">
+      <button id="btnStartAudio" class="btn" disabled>Start Connection</button>
+      <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
+      <button id="btnHangup" class="btn secondary" disabled>Hang Up</button>
+      <span id="callStatus" class="small" style="margin-left:10px;">Status: idle</span>
     </div>
 
     <audio id="remoteAudio" autoplay playsinline></audio>
 
-    <div class="screen">
-      <iframe
-        id="artFrame"
-        title="Conversation buddy artwork"
-        allow="autoplay; microphone; camera"
-      ></iframe>
+    <div class="screen" style="position: relative; width: 100%; max-width: 800px; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+      
+      <video id="remoteCanvasStream" autoplay playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
+      
+      <canvas id="artCanvas" width="800" height="450" style="position: absolute; opacity: 0; pointer-events: none;"></canvas>
     </div>
 
     <div class="row" style="margin-top:18px;">
-      <a href="gallery.html" class="btn secondary">Gallery</a>
+      <a href="conversation.html" class="btn secondary">Conversation Tips</a>
       <a href="index.html" class="btn secondary">Home</a>
     </div>
   </main>
 
-  <!-- Firebase SDKs (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script src="js/firebase.js"></script>
+  <script src="js/auth.js"></script>
 
-  <!-- Set session BEFORE scripts -->
   <script>
     const params = new URLSearchParams(window.location.search);
     const session = params.get("session") || "";
-
-    const meta = document.getElementById("meta");
-    meta.textContent = session
-      ? `Session: ${session}`
-      : "No session code found. Open this page through Connect.";
-
     window.__PULSE_SESSION__ = session;
 
-    // TEMPORARY shared p5 sketch for both participants
-    const frame = document.getElementById("artFrame");
-    if (frame) frame.src = "https://editor.p5js.org/Hana_Namdar/full/D814zdJEF";
+    const meta = document.getElementById("meta");
+    meta.textContent = session ? `Session: ${session}` : "No session code found. Open this page through Connect.";
+
+    // Automatically load the topic that was generated during session creation
+    if (session) {
+      const topicRef = firebase.database().ref(`sessions/${session}/topic`);
+      topicRef.on("value", (snap) => {
+        const topicData = snap.val();
+        if (topicData && topicData.text) {
+          document.getElementById("topicText").textContent = topicData.text;
+          document.getElementById("topicStatus").textContent = "Topic synced successfully.";
+          document.getElementById("btnStartAudio").disabled = false;
+        }
+      });
+    }
+
+    // A tiny placeholder to draw on the local canvas so WebRTC has something to capture. 
+    // Replace this logic with your actual p5.js code later!
+    const canvas = document.getElementById("artCanvas");
+    const ctx = canvas.getContext("2d");
+    function drawPlaceholder() {
+      ctx.fillStyle = `hsl(${(Date.now() / 10) % 360}, 100%, 50%)`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      requestAnimationFrame(drawPlaceholder);
+    }
+    drawPlaceholder();
   </script>
 
   <script src="js/result-call.js"></script>
-  <script src="js/topic-sync.js"></script>
-
 </body>
 </html>

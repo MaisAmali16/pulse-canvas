@@ -4,6 +4,19 @@
   <meta charset="utf-8" />
   <title>Connect – Pulse Canvas</title>
   <link rel="stylesheet" href="css/style.css">
+  
+  <style>
+    .btn:disabled, button:disabled {
+      opacity: 0.4 !important;
+      cursor: not-allowed !important;
+      background: #222 !important;
+      color: #666 !important;
+      border: 1px solid #333 !important;
+      transform: none !important;
+      filter: none !important;
+      box-shadow: none !important;
+    }
+  </style>
 </head>
 <body>
 
@@ -24,42 +37,48 @@
 
   <main>
     <h1>Connect With Your Partner</h1>
-    <p class="small">
-      Choose your comfort settings, then create a session code or join one.
-    </p>
+    
+    <div class="panel" style="margin-bottom: 20px;">
+      <h2 style="margin-top:0;">How the Topic Generator Works</h2>
+      <ul class="small" style="line-height:1.7; margin:0;">
+        <li>Creating a session will automatically generate a unique conversation topic.</li>
+        <li>To ensure spontaneity, you get the topic you get—embrace the challenge!</li>
+        <li>The host will see the topic immediately. The guest will see it once connected.</li>
+      </ul>
+    </div>
 
     <div class="panel">
       <label>
         Do you prefer a sound-free experience?
-        <select id="soundPref">
+        <select id="soundPref" style="margin-left: 10px; padding: 4px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;">
           <option value="sound">No</option>
           <option value="silent">Yes</option>
         </select>
       </label>
 
-      <hr>
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
 
       <div class="row">
-        <button id="createBtn">Create Session</button>
-        <input id="sessionCode" placeholder="Enter Session Code" />
-        <button id="joinBtn">Join Session</button>
+        <button id="createBtn" class="btn">Create Session</button>
+        <input id="sessionCode" placeholder="Enter Session Code" style="padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; text-transform: uppercase;" />
+        <button id="joinBtn" class="btn secondary">Join Session</button>
       </div>
 
-      <p id="status" class="small" style="margin-top:14px;"></p>
+      <p id="status" class="small" style="margin-top:14px; font-weight: bold;"></p>
+      
+      <div id="topicDisplayArea" style="display:none; margin-top:20px; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+        <h3 style="margin-top:0; font-size: 1rem; color: #aaa;">Your Generated Topic:</h3>
+        <p id="visibleGeneratedTopic" style="font-size: 1.15rem; line-height: 1.5; margin-bottom: 0; color: #fff;"></p>
+      </div>
     </div>
-
-    <!-- Firebase compat SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-    <!-- Your Firebase init -->
-    <script src="js/firebase.js"></script>
-
-    <!-- Your app logic -->
-    <script src="js/auth.js"></script>
-    <script src="js/session.js"></script>
   </main>
 
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/session.js"></script>
 </body>
 </html>
