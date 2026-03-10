@@ -57,7 +57,6 @@ async function initPeerConnection(db, code) {
   sessionRef = db.ref(`sessions/${code}/call/webrtc`);
   pc = new RTCPeerConnection(RTC_CONFIG);
 
-  // 1. Handle Incoming Tracks (Audio & Canvas Video)
   pc.ontrack = (event) => {
     const track = event.track;
     const stream = event.streams[0];
@@ -66,7 +65,6 @@ async function initPeerConnection(db, code) {
       remoteAudio.srcObject = stream;
       setStatus("Remote audio connected");
     } else if (track.kind === "video") {
-      // This routes their artwork into your visible video element!
       remoteCanvasVideo.srcObject = stream;
       remoteCanvasVideo.play().catch(e => console.warn("Video play blocked:", e));
       setStatus("Remote canvas connected");
@@ -79,7 +77,6 @@ async function initPeerConnection(db, code) {
     sessionRef.child(candPath).push(event.candidate.toJSON());
   };
 
-  // 2. Add Local Audio
   try {
     localStream = await navigator.mediaDevices.getUserMedia(MIC_CONSTRAINTS);
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
@@ -89,20 +86,20 @@ async function initPeerConnection(db, code) {
     setStatus("Mic denied or unavailable");
   }
 
-  // 3. Capture Invisible Local Canvas and Add to Connection
-  const localCanvas = document.getElementById("artCanvas");
+  // Find the canvas created by p5.js
+  const localCanvas = document.querySelector(".p5Canvas");
   if (localCanvas) {
     try {
-      const canvasStream = localCanvas.captureStream(30); // Capture at 30fps
+      const canvasStream = localCanvas.captureStream(30); 
       canvasStream.getTracks().forEach(track => {
         pc.addTrack(track, canvasStream);
       });
-      setStatus("Mic & Canvas ready for streaming");
+      setStatus("Mic & Canvas streaming");
     } catch(e) {
       console.error("Canvas capture error:", e);
     }
   } else {
-    console.warn("artCanvas not found. Only streaming audio.");
+    console.warn("p5 canvas not found. Make sure sketch.js is loading correctly.");
   }
 }
 
@@ -121,7 +118,7 @@ async function hostFlow() {
     ts: Date.now()
   });
 
-  setStatus("host: offer sent — waiting for guest…");
+  setStatus("host: waiting for guest…");
 
   sessionRef.child("answer").on("value", async (snap) => {
     const ans = snap.val();
@@ -146,7 +143,7 @@ async function guestFlow() {
     if (!offer || !pc || pc.currentRemoteDescription) return;
 
     await pc.setRemoteDescription(new RTCSessionDescription(offer));
-    setStatus("guest: offer received — sending answer…");
+    setStatus("guest: sending answer…");
 
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
@@ -175,21 +172,20 @@ function setButtons(inCall) {
 }
 
 async function startCall() {
+  setStatus("signing in…");
   const code = (window.__PULSE_SESSION__ || "").trim();
   if (!code) {
-    setStatus("missing session code (?session=XXXXXX)");
+    setStatus("missing session code");
     return;
   }
 
   try {
-    setStatus("signing in…");
     const user = await ensureAnonAuth();
     const db = firebase.database();
 
     setStatus("assigning role…");
     myRole = await assignRole(db, code, user.uid);
-    setStatus(`role = ${myRole}`);
-
+    
     await initPeerConnection(db, code);
     setButtons(true);
 

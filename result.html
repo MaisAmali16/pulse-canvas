@@ -4,6 +4,31 @@
   <meta charset="utf-8" />
   <title>Result – Pulse Canvas</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* New styles to make the art player massive */
+    .art-container {
+      width: 100%;
+      height: 85vh; /* Takes up 85% of the screen height */
+      background: #05070d;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      margin-top: 20px;
+    }
+    #remoteCanvasStream {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Ensures the art fills the entire box without black bars */
+    }
+    /* Hide the local p5 canvas so it only exists to be recorded, not seen locally */
+    #defaultCanvas0 {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -100;
+    }
+  </style>
 </head>
 <body>
 
@@ -12,7 +37,6 @@
       <a class="brand" href="index.html">
         <span class="title">Pulse Canvas</span>
       </a>
-
       <nav>
         <a href="index.html">Home</a>
         <a href="about.html">About</a>
@@ -22,33 +46,34 @@
     </div>
   </header>
 
-  <main>
-    <h1>Your conversation buddy’s screen</h1>
-    <p class="small" id="meta"></p>
+  <main style="max-width: 1400px; padding: 0 20px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+      <div style="flex: 1; min-width: 300px;">
+        <h1 style="margin-top: 0;">Session View</h1>
+        <p class="small" id="meta"></p>
 
-    <div class="card" style="margin: 14px 0;">
-      <h2 style="margin:0 0 6px 0;">Your Topic</h2>
-      <div id="topicText" style="font-size:1.05rem; line-height:1.6; color:rgba(255,255,255,0.92);">
-        Loading topic…
+        <div class="card" style="margin: 14px 0;">
+          <h2 style="margin:0 0 6px 0;">Your Topic</h2>
+          <div id="topicText" style="font-size:1.05rem; line-height:1.6; color:rgba(255,255,255,0.92);">
+            Loading topic…
+          </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 20px;">
+          <button id="btnStartAudio" class="btn">Start Connection</button>
+          <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
+          <button id="btnHangup" class="btn secondary" disabled>Hang Up</button>
+          <span id="callStatus" class="small" style="margin-left:10px;">Status: idle</span>
+        </div>
       </div>
-      <p id="topicStatus" class="small" style="margin-top:10px;">&nbsp;</p>
     </div>
 
-    <div class="row" style="margin-bottom: 20px;">
-      <button id="btnStartAudio" class="btn" disabled>Start Connection</button>
-      <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
-      <button id="btnHangup" class="btn secondary" disabled>Hang Up</button>
-      <span id="callStatus" class="small" style="margin-left:10px;">Status: idle</span>
+    <div class="art-container">
+      <video id="remoteCanvasStream" autoplay playsinline></video>
     </div>
 
     <audio id="remoteAudio" autoplay playsinline></audio>
-
-    <div class="screen" style="position: relative; width: 100%; max-width: 800px; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-      
-      <video id="remoteCanvasStream" autoplay playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
-      
-      <canvas id="artCanvas" width="800" height="450" style="position: absolute; opacity: 0; pointer-events: none;"></canvas>
-    </div>
 
     <div class="row" style="margin-top:18px;">
       <a href="conversation.html" class="btn secondary">Conversation Tips</a>
@@ -63,6 +88,14 @@
   <script src="js/firebase.js"></script>
   <script src="js/auth.js"></script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+  
+  <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+
+  <script src="js/sketch.js"></script> 
+
   <script>
     const params = new URLSearchParams(window.location.search);
     const session = params.get("session") || "";
@@ -71,29 +104,15 @@
     const meta = document.getElementById("meta");
     meta.textContent = session ? `Session: ${session}` : "No session code found. Open this page through Connect.";
 
-    // Automatically load the topic that was generated during session creation
     if (session) {
       const topicRef = firebase.database().ref(`sessions/${session}/topic`);
       topicRef.on("value", (snap) => {
         const topicData = snap.val();
         if (topicData && topicData.text) {
           document.getElementById("topicText").textContent = topicData.text;
-          document.getElementById("topicStatus").textContent = "Topic synced successfully.";
-          document.getElementById("btnStartAudio").disabled = false;
         }
       });
     }
-
-    // A tiny placeholder to draw on the local canvas so WebRTC has something to capture. 
-    // Replace this logic with your actual p5.js code later!
-    const canvas = document.getElementById("artCanvas");
-    const ctx = canvas.getContext("2d");
-    function drawPlaceholder() {
-      ctx.fillStyle = `hsl(${(Date.now() / 10) % 360}, 100%, 50%)`;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      requestAnimationFrame(drawPlaceholder);
-    }
-    drawPlaceholder();
   </script>
 
   <script src="js/result-call.js"></script>
