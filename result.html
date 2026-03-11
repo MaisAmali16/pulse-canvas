@@ -5,10 +5,9 @@
   <title>Result – Pulse Canvas</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    /* New styles to make the art player massive */
     .art-container {
       width: 100%;
-      height: 85vh; /* Takes up 85% of the screen height */
+      height: 85vh; 
       background: #05070d;
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 12px;
@@ -19,9 +18,8 @@
     #remoteCanvasStream {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Ensures the art fills the entire box without black bars */
+      object-fit: cover; 
     }
-    /* Hide the local p5 canvas so it only exists to be recorded, not seen locally */
     #defaultCanvas0 {
       position: absolute;
       opacity: 0;
@@ -61,6 +59,8 @@
         </div>
 
         <div class="row" style="margin-bottom: 20px;">
+          <div id="sensorBox"></div> 
+
           <button id="btnStartAudio" class="btn">Start Connection</button>
           <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
           <button id="btnHangup" class="btn secondary" disabled>Hang Up</button>
@@ -89,10 +89,9 @@
   <script src="js/auth.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
   
-  <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
 
   <script src="js/sketch.js"></script> 
 
