@@ -6,12 +6,13 @@
   <link rel="stylesheet" href="css/style.css">
   
   <style>
+    /* Preserved your disabled button styling for the new aesthetic */
     .btn:disabled, button:disabled {
       opacity: 0.4 !important;
       cursor: not-allowed !important;
-      background: #222 !important;
+      background: #111 !important;
       color: #666 !important;
-      border: 1px solid #333 !important;
+      border: 1px dashed #444 !important;
       transform: none !important;
       filter: none !important;
       box-shadow: none !important;
@@ -22,10 +23,7 @@
 
   <header class="site-header">
     <div class="header-inner">
-      <a class="brand" href="index.html">
-        <span class="title">Pulse Canvas</span>
-      </a>
-
+      <a class="brand" href="index.html">Pulse Canvas</a>
       <nav>
         <a href="index.html">Home</a>
         <a href="about.html">About</a>
@@ -35,42 +33,70 @@
     </div>
   </header>
 
-  <main>
-    <h1>Connect With Your Partner</h1>
-    
-    <div class="panel" style="margin-bottom: 20px;">
-      <h2 style="margin-top:0;">How the Topic Generator Works</h2>
-      <ul class="small" style="line-height:1.7; margin:0;">
-        <li>Creating a session will automatically generate a unique conversation topic.</li>
-        <li>To ensure spontaneity, you get the topic you get—embrace the challenge!</li>
-        <li>The host will see the topic immediately. The guest will see it once connected.</li>
-      </ul>
+  <main class="landing-main">
+    <div class="hero-section" style="margin-bottom: 30px;">
+      <h1 class="hero-title" style="font-size: 3rem; letter-spacing: 4px;">PAIR UP</h1>
+      <p class="hero-subtitle" style="text-transform: none;">
+        Decide who will Host and who will Join.<br>
+        <strong>Once the Guest connects, you will both be transported to the Canvas automatically.</strong>
+      </p>
     </div>
 
-    <div class="panel">
-      <label>
+    <div class="card" style="max-width: 800px; width: 100%; text-align: left; margin-bottom: 20px;">
+      <h3 style="margin-top: 0; border-bottom: 1px dashed var(--border); padding-bottom: 10px;">Topic & Settings</h3>
+      <ul style="font-size: 0.95rem; margin-bottom: 20px; padding-left: 20px; line-height: 1.6; color: var(--muted);">
+        <li>Creating a session will automatically generate a unique conversation topic.</li>
+        <li>To ensure spontaneity, you get the topic you get! Embrace the challenge!</li>
+        <li>The host will see the topic immediately. The guest will see it once connected.</li>
+      </ul>
+      
+      <label style="font-size: 1rem; color: var(--text);">
         Do you prefer a sound-free experience?
-        <select id="soundPref" style="margin-left: 10px; padding: 4px; background: rgba(0,0,0,0.5); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;">
+        <select id="soundPref" style="margin-left: 10px; padding: 6px 12px; background: var(--bg); color: var(--text); border: 1px solid var(--text); font-family: inherit; outline: none;">
           <option value="sound">No</option>
           <option value="silent">Yes</option>
         </select>
       </label>
+    </div>
 
-      <hr style="margin: 20px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
-
-      <div class="row">
+    <div class="info-grid" style="max-width: 800px; width: 100%;">
+      
+      <div class="card" style="text-align: center;">
+        <h3 style="color: var(--text);">Person A: The Host</h3>
+        <p style="font-size: 0.9rem; margin-bottom: 20px; color: var(--muted);">
+          1. Click Create Session below.<br>
+          2. Copy the code and send it to your partner.
+        </p>
         <button id="createBtn" class="btn">Create Session</button>
-        <input id="sessionCode" placeholder="Enter Session Code" style="padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; text-transform: uppercase;" />
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <h3 style="color: var(--text);">Person B: The Guest</h3>
+        <p style="font-size: 0.9rem; margin-bottom: 20px; color: var(--muted);">
+          1. Get the code from the Host.<br>
+          2. Paste it below and join.
+        </p>
+        <input type="text" id="sessionCode" placeholder="ENTER CODE" 
+               style="padding: 12px; width: 80%; margin-bottom: 15px; background: var(--bg); border: 1px solid var(--text); color: var(--text); text-align: center; font-family: monospace; text-transform: uppercase; font-size: 1.1rem; outline: none;">
+        <br>
         <button id="joinBtn" class="btn secondary">Join Session</button>
       </div>
 
-      <p id="status" class="small" style="margin-top:14px; font-weight: bold;"></p>
+    </div>
+
+    <div style="max-width: 800px; width: 100%; text-align: center;">
+      <p id="status" style="margin-top:10px; font-weight: bold; font-size: 1.1rem; color: var(--text);"></p>
       
-      <div id="topicDisplayArea" style="display:none; margin-top:20px; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
-        <h3 style="margin-top:0; font-size: 1rem; color: #aaa;">Your Generated Topic:</h3>
-        <p id="visibleGeneratedTopic" style="font-size: 1.15rem; line-height: 1.5; margin-bottom: 0; color: #fff;"></p>
+      <div id="topicDisplayArea" style="display:none; margin-top:20px; padding: 25px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);">
+        <h3 style="margin-top:0; font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Your Generated Topic</h3>
+        <p id="visibleGeneratedTopic" style="font-size: 1.25rem; line-height: 1.5; margin-bottom: 0; color: var(--text);"></p>
       </div>
     </div>
+
+    <div class="action-section" style="margin-top: 40px;">
+      <a href="conversation.html" class="btn secondary">Back</a>
+    </div>
+
   </main>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>

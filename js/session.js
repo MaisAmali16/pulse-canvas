@@ -4,25 +4,26 @@ const createBtn = document.getElementById("createBtn");
 const joinBtn = document.getElementById("joinBtn");
 const codeInput = document.getElementById("sessionCode");
 
+// Updated with your improved grammar and formatting!
 const topics = [
-  "What’s something small that made you smile recently, and why did it hit you that way?",
-  "What’s a comfort food you love, and what’s the story behind it?",
-  "What’s a routine you enjoy, and how did you build it over time?",
-  "What’s something you’re looking forward to this week, and why does it matter to you?",
-  "What’s a place you feel good in, and what about it creates that feeling?",
-  "What’s a song you’ve replayed lately, and what do you think it brings out in you?",
+  "What’s something small that made you smile recently? And why did it hit you that way?",
+  "What’s a comfort food you love? And what’s the story behind it?",
+  "What’s a routine you enjoy? And how did you build it over time?",
+  "What’s something you’re looking forward to this week? And why does it matter to you?",
+  "What’s a place you feel good in? And what about it creates that feeling?",
+  "What’s a song you’ve replayed lately? And what do you think it brings out in you?",
   "Tell a story you always end up telling. Why do you think you keep coming back to it?",
   "Describe a memory that feels like a snapshot. What makes it so vivid to you?",
   "What’s a moment you felt unexpectedly proud of yourself, and what led up to it?",
-  "What’s a value you care about more now than before—what changed for you?",
+  "What’s a value you care about more now than before? What changed for you?",
   "What’s a belief you changed your mind about, and what influenced that change?",
   "When do you feel most like yourself, and what about that moment brings it out?",
   "Describe a moment you felt truly understood. What did the other person do that helped?",
-  "When you’re stressed, what kind of help actually works for you, and why does it work?",
-  "What’s something you’re working on internally these days, and how are you approaching it?",
-  "If you could design your perfect day, what happens—and why those choices?",
-  "If you could pause time for one hour, how would you use it—and why that?",
-  "If you could add one ‘app update’ feature to real life, what would it be—and how would it change your day?",
+  "When you’re stressed, what kind of help actually works for you? And why does it work?",
+  "What’s something you’re working on internally these days? And how are you approaching it?",
+  "If you could design your perfect day, what happens? And why those choices?",
+  "If you could pause time for one hour, how would you use it? And why that?",
+  "If you could add one ‘app update’ feature to real life, what would it be? And how would it change your day?",
   "What kind of support feels most meaningful to you, and why does it land better than other kinds?",
   "What do you think makes a friendship last, and why do those things matter to you?"
 ];
@@ -80,6 +81,9 @@ async function createSession() {
   const code = makeCode(6);
   const prefs = getPrefs();
   const randomTopic = getRandomTopic(); // Instantly generate the idea
+  
+  // --- Save the sound preference to the browser ---
+  localStorage.setItem('pulseCanvas_sound', prefs.soundPref);
 
   const sessionRef = firebase.database().ref("sessions/" + code);
 
@@ -142,6 +146,9 @@ async function joinSession() {
 
   const prefs = getPrefs();
   const data = snap.val();
+  
+  // --- Save the sound preference to the browser ---
+  localStorage.setItem('pulseCanvas_sound', prefs.soundPref);
 
   if (data.status === "paired") {
     setStatus("This session is already paired. Try a new code.", false);

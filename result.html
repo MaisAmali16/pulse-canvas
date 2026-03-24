@@ -7,13 +7,12 @@
   <style>
     .art-container {
       width: 100%;
-      height: 85vh; 
-      background: #05070d;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      overflow: hidden;
+      max-width: 1200px;
+      height: 75vh; 
+      background: #000;
+      border: 1px solid rgba(255,255,255,0.2);
       position: relative;
-      margin-top: 20px;
+      margin: 20px auto;
     }
     #remoteCanvasStream {
       width: 100%;
@@ -32,42 +31,34 @@
 
   <header class="site-header">
     <div class="header-inner">
-      <a class="brand" href="index.html">
-        <span class="title">Pulse Canvas</span>
-      </a>
+      <a class="brand" href="index.html">Pulse Canvas</a>
       <nav>
         <a href="index.html">Home</a>
         <a href="about.html">About</a>
-        <a href="gallery.html">Gallery</a>
         <a href="instructions.html" class="primary">Start</a>
       </nav>
     </div>
   </header>
 
-  <main style="max-width: 1400px; padding: 0 20px;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
-      <div style="flex: 1; min-width: 300px;">
-        <h1 style="margin-top: 0;">Session View</h1>
-        <p class="small" id="meta"></p>
+  <main>
+    <h1>Session View</h1>
+    <p id="meta"></p>
 
-        <div class="card" style="margin: 14px 0;">
-          <h2 style="margin:0 0 6px 0;">Your Topic</h2>
-          <div id="topicText" style="font-size:1.05rem; line-height:1.6; color:rgba(255,255,255,0.92);">
-            Loading topic…
-          </div>
-        </div>
-
-        <div class="row" style="margin-bottom: 20px;">
-          <div id="sensorBox"></div> 
-
-          <button id="btnStartAudio" class="btn">Start Connection</button>
-          <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
-          <button id="btnHangup" class="btn secondary" disabled>Hang Up</button>
-          <span id="callStatus" class="small" style="margin-left:10px;">Status: idle</span>
-        </div>
+    <div class="card">
+      <h2 style="margin:0 0 10px 0;">Generated Topic</h2>
+      <div id="topicText" style="font-size:1.1rem; color:#fff;">
+        Loading topic…
       </div>
     </div>
+
+    <div class="row">
+      <div id="sensorBox"></div> 
+
+      <button id="btnStartAudio" class="btn">Start Connection</button>
+      <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
+      <button id="btnHangup" class="btn secondary" disabled>Hang Up</button>
+    </div>
+    <p id="callStatus" style="font-size: 0.85rem; color: #aaa;">Status: idle</p>
 
     <div class="art-container">
       <video id="remoteCanvasStream" autoplay playsinline></video>
@@ -75,23 +66,21 @@
 
     <audio id="remoteAudio" autoplay playsinline></audio>
 
-    <div class="row" style="margin-top:18px;">
+    <div class="row" style="margin-top:20px;">
       <a href="conversation.html" class="btn secondary">Conversation Tips</a>
-      <a href="index.html" class="btn secondary">Home</a>
+      <a href="index.html" class="btn secondary">End Session</a>
     </div>
   </main>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <script src="js/firebase.js"></script>
   <script src="js/auth.js"></script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
-  
-  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/addons/p5.sound.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 
   <script src="js/sketch.js"></script> 
 
@@ -101,7 +90,7 @@
     window.__PULSE_SESSION__ = session;
 
     const meta = document.getElementById("meta");
-    meta.textContent = session ? `Session: ${session}` : "No session code found. Open this page through Connect.";
+    meta.textContent = session ? `SESSION CODE: ${session}` : "NO SESSION DETECTED";
 
     if (session) {
       const topicRef = firebase.database().ref(`sessions/${session}/topic`);
@@ -112,6 +101,14 @@
         }
       });
     }
+
+    // This makes sure clicking "Start Connection" also starts the music
+    document.getElementById("btnStartAudio").addEventListener("click", () => {
+      if (typeof userStartAudio === "function") {
+        userStartAudio(); // Unlocks the browser audio engine
+        audioStarted = true; // Tells your sketch to start playing the mp3s
+      }
+    });
   </script>
 
   <script src="js/result-call.js"></script>
