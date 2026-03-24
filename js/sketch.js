@@ -1530,17 +1530,35 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-const startBtn = document.getElementById("startBtn");
+document.addEventListener("DOMContentLoaded", () => {
 
-if (startBtn) {
+  const startBtn = document.getElementById("btnStartAudio");
+
+  if (!startBtn) {
+    console.error("Start button missing in HTML");
+    return;
+  }
+
   startBtn.addEventListener("click", async () => {
-    started = true;
 
-    const startScreen = document.getElementById("startScreen");
-    if (startScreen) startScreen.style.display = "none";
+    startBtn.disabled = true;
 
-    await userStartAudio();
+    if (window.getAudioContext && window.getAudioContext().state === "suspended") {
+      await window.getAudioContext().resume();
+    }
+
+    if (typeof userStartAudio === "function") {
+      await userStartAudio();
+    }
+
+    if (typeof startCall === "function") {
+      startCall();
+    } else {
+      console.error("startCall not found");
+      const el = document.getElementById("callStatus");
+      if (el) el.textContent = "Connection script missing.";
+    }
+
   });
-} else {
-  console.warn("startBtn not found in HTML");
-}
+
+});
