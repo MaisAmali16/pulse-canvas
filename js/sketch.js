@@ -120,7 +120,7 @@ let displayArousal = "calm";
 let displayState = "Calm";
 
 //startscreen
-let started = true;
+let started = false;
 
 function computeArousalFromBpm(bpmValue) {
   let arousal, lvl;
@@ -265,8 +265,7 @@ function setup() {
   mic = new p5.AudioIn();
 
   let connectBtn = createButton("Connect Heart Sensor");
-  connectBtn.parent('sensorBox'); // This locks it neatly into your new website UI
-  connectBtn.class('btn');        // This gives it the cool black-and-white aesthetic
+  connectBtn.position(20, 20);
   connectBtn.mousePressed(connectSerial);
 
   fft = new p5.FFT(0.8, 2048);
@@ -307,19 +306,6 @@ function setup() {
     }
   `;
   document.head.appendChild(cssEl);
-  
-  // --- SOUND PREFERENCE LOGIC ---
-  // Read the sticky note we left on the connect page
-  let soundPref = localStorage.getItem('pulseCanvas_sound');
-  
-  // If they chose silent, mute all p5.js artwork sounds
-  if (soundPref === 'silent') {
-    outputVolume(0); 
-    console.log("Audio mode: SILENT (Background tracks muted)");
-  } else {
-    outputVolume(1); 
-    console.log("Audio mode: SOUND (Background tracks active)");
-  }
 }
 
 function playStateSound(state) {
@@ -357,8 +343,7 @@ function playStateSound(state) {
 
 // ================= FACE LOAD =================
 async function loadFaceAPI() {
-  // Add the trailing slash at the end of the URL!
-  const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/";
+  const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
 
   try {
     await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
