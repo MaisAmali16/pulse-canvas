@@ -197,16 +197,18 @@
     // Connect the button to both the music AND the call
     document.getElementById("btnStartAudio").addEventListener("click", () => {
       
-      // 1. Start the visual canvas audio engine (p5.js)
-      if (typeof userStartAudio === 'function') {
-        userStartAudio();
+      // 1. Start the visual canvas audio engine (Bulletproof native method)
+      if (window.getAudioContext && window.getAudioContext().state === 'suspended') {
+        window.getAudioContext().resume();
+      } else if (typeof userStartAudio === 'function') {
+        userStartAudio(); // Fallback for p5
       }
       
       // 2. Start the actual WebRTC network connection
       if (typeof startCall === 'function') {
         startCall();
       } else {
-        console.error("CRITICAL ERROR: startCall() is not defined.");
+        console.error("CRITICAL ERROR: startCall() is not defined. Check your console for other red errors!");
         document.getElementById("callStatus").textContent = "Error: Connection script missing.";
       }
       

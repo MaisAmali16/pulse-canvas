@@ -157,7 +157,7 @@ async function guestFlow() {
     setStatus("call live");
   });
 
-  sessionRef.child("hostCandidates").on("child_added", async (snap) => {
+  sessionRef.child("guestCandidates").on("child_added", async (snap) => {
     const cand = snap.val();
     if (!cand || !pc) return;
     try { await pc.addIceCandidate(new RTCIceCandidate(cand)); }
@@ -226,6 +226,5 @@ async function hangUp() {
   setStatus("idle");
 }
 
-// NOTE: btnStartAudio click listener is handled in result.html!
 if (btnMute) btnMute.addEventListener("click", toggleMute);
 if (btnHangup) btnHangup.addEventListener("click", hangUp);
