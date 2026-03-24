@@ -357,7 +357,8 @@ function playStateSound(state) {
 
 // ================= FACE LOAD =================
 async function loadFaceAPI() {
-  const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model";
+  // Add the trailing slash at the end of the URL!
+  const MODEL_URL = "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/";
 
   try {
     await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
