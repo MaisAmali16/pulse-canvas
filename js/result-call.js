@@ -226,6 +226,6 @@ async function hangUp() {
   setStatus("idle");
 }
 
-if (btnStartAudio) btnStartAudio.addEventListener("click", startCall);
+// NOTE: btnStartAudio click listener is handled in result.html!
 if (btnMute) btnMute.addEventListener("click", toggleMute);
 if (btnHangup) btnHangup.addEventListener("click", hangUp);

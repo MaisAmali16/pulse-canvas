@@ -5,19 +5,30 @@
   <title>Result – Pulse Canvas</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .art-container {
-      width: 100%;
-      max-width: 1200px;
-      height: 75vh; 
+    /* 1. Immersive Fullscreen Body */
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden; /* Removes scrollbars for a pure app feel */
       background: #000;
-      border: 1px solid rgba(255,255,255,0.2);
-      position: relative;
-      margin: 20px auto;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* 2. Edge-to-Edge Art Container */
+    .art-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
     }
     #remoteCanvasStream {
       width: 100%;
       height: 100%;
-      object-fit: cover; 
+      object-fit: cover; /* Stretches and crops video to fill screen */
     }
     #defaultCanvas0 {
       position: absolute;
@@ -25,52 +36,133 @@
       pointer-events: none;
       z-index: -100;
     }
+
+    /* 3. Floating Overlay UI */
+    .ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 10;
+      pointer-events: none; /* Lets clicks pass through the empty space to the canvas */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .ui-element {
+      pointer-events: auto; /* Re-enables clicks for buttons and text */
+    }
+
+    /* 4. Top Bar: Sleek Topic Pill */
+    .top-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .topic-pill {
+      background: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(5px);
+      padding: 12px 25px;
+      border-radius: 30px;
+      text-align: center;
+      max-width: 80%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .topic-pill h2 {
+      margin: 0 0 4px 0;
+      font-size: 0.65rem;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    #topicText {
+      font-size: 1.1rem;
+      color: #fff;
+      margin: 0;
+    }
+    #callStatus {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #aaa;
+      margin: 0;
+    }
+
+    /* 5. Bottom Bar: Floating Controls */
+    .bottom-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .controls-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    /* Overlay Button Tweaks */
+    .btn-overlay {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+    }
+    .btn-overlay:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.9);
+      color: #000;
+      border: none;
+      font-weight: bold;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #fff;
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
 
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="index.html">Pulse Canvas</a>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="about.html">About</a>
-        <a href="instructions.html" class="primary">Start</a>
-      </nav>
+  <div class="art-container">
+    <video id="remoteCanvasStream" autoplay playsinline></video>
+  </div>
+  <audio id="remoteAudio" autoplay playsinline style="display: none;"></audio>
+
+  <div class="ui-layer">
+    
+    <div class="top-bar ui-element">
+      <div class="topic-pill">
+        <h2>Conversation Topic</h2>
+        <div id="topicText">Loading topic…</div>
+      </div>
+      <p id="callStatus">Status: idle</p>
+      <div id="sensorBox"></div> 
     </div>
-  </header>
 
-  <main>
-    <h1>Session View</h1>
-    <p id="meta"></p>
-
-    <div class="card">
-      <h2 style="margin:0 0 10px 0;">Generated Topic</h2>
-      <div id="topicText" style="font-size:1.1rem; color:#fff;">
-        Loading topic…
+    <div class="bottom-bar ui-element">
+      <div class="controls-row">
+        <button id="btnStartAudio" class="btn btn-primary">Start Connection</button>
+        <button id="btnMute" class="btn btn-overlay" disabled>Mute Mic</button>
+        <button id="btnHangup" class="btn btn-overlay" style="color: #ff5555; border-color: rgba(255,85,85,0.4);" disabled>Hang Up</button>
+      </div>
+      <div class="controls-row" style="margin-top: 5px;">
+        <a href="conversation.html" class="btn btn-overlay" style="font-size: 0.8rem; padding: 6px 15px;">Tips</a>
+        <a href="index.html" class="btn btn-overlay" style="font-size: 0.8rem; padding: 6px 15px;">Leave</a>
       </div>
     </div>
 
-    <div class="row">
-      <div id="sensorBox"></div> 
-
-      <button id="btnStartAudio" class="btn">Start Connection</button>
-      <button id="btnMute" class="btn secondary" disabled>Mute Mic</button>
-      <button id="btnHangup" class="btn secondary" disabled>Hang Up</button>
-    </div>
-    <p id="callStatus" style="font-size: 0.85rem; color: #aaa;">Status: idle</p>
-
-    <div class="art-container">
-      <video id="remoteCanvasStream" autoplay playsinline></video>
-    </div>
-
-    <audio id="remoteAudio" autoplay playsinline></audio>
-
-    <div class="row" style="margin-top:20px;">
-      <a href="conversation.html" class="btn secondary">Conversation Tips</a>
-      <a href="index.html" class="btn secondary">End Session</a>
-    </div>
-  </main>
+  </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -83,34 +175,42 @@
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 
   <script src="js/sketch.js"></script> 
+  <script src="js/result-call.js"></script>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const session = params.get("session") || "";
     window.__PULSE_SESSION__ = session;
 
-    const meta = document.getElementById("meta");
-    meta.textContent = session ? `SESSION CODE: ${session}` : "NO SESSION DETECTED";
-
+    // Fetch and display the topic directly from the database!
     if (session) {
       const topicRef = firebase.database().ref(`sessions/${session}/topic`);
       topicRef.on("value", (snap) => {
         const topicData = snap.val();
         if (topicData && topicData.text) {
-          document.getElementById("topicText").textContent = topicData.text;
+          const topicTextEl = document.getElementById("topicText");
+          if (topicTextEl) topicTextEl.textContent = topicData.text;
         }
       });
     }
 
-    // This makes sure clicking "Start Connection" also starts the music
+    // Connect the button to both the music AND the call
     document.getElementById("btnStartAudio").addEventListener("click", () => {
-      if (typeof userStartAudio === "function") {
-        userStartAudio(); // Unlocks the browser audio engine
-        audioStarted = true; // Tells your sketch to start playing the mp3s
+      
+      // 1. Start the visual canvas audio engine (p5.js)
+      if (typeof userStartAudio === 'function') {
+        userStartAudio();
       }
+      
+      // 2. Start the actual WebRTC network connection
+      if (typeof startCall === 'function') {
+        startCall();
+      } else {
+        console.error("CRITICAL ERROR: startCall() is not defined.");
+        document.getElementById("callStatus").textContent = "Error: Connection script missing.";
+      }
+      
     });
   </script>
-
-  <script src="js/result-call.js"></script>
 </body>
 </html>
