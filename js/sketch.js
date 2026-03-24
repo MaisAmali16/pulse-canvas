@@ -1530,12 +1530,17 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-document.getElementById("startBtn").addEventListener("click", () => {
-  started = true;
+const startBtn = document.getElementById("startBtn");
 
-  // hide start screen
-  document.getElementById("startScreen").style.display = "none";
+if (startBtn) {
+  startBtn.addEventListener("click", async () => {
+    started = true;
 
-  // start audio (important for browser permissions)
-  userStartAudio();
-});
+    const startScreen = document.getElementById("startScreen");
+    if (startScreen) startScreen.style.display = "none";
+
+    await userStartAudio();
+  });
+} else {
+  console.warn("startBtn not found in HTML");
+}

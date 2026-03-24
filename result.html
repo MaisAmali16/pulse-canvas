@@ -37,6 +37,11 @@
       z-index: -100;
     }
 
+    .p5Canvas {
+      opacity: 0;
+      pointer-events: none;
+ }
+
     /* 3. Floating Overlay UI */
     .ui-layer {
       position: absolute;
@@ -147,7 +152,7 @@
         <div id="topicText">Loading topic…</div>
       </div>
       <p id="callStatus">Status: idle</p>
-      <div id="sensorBox"></div> 
+      <div id="sensorBox" class="ui-element"></div> 
     </div>
 
     <div class="bottom-bar ui-element">
@@ -194,25 +199,51 @@
       });
     }
 
-    // Connect the button to both the music AND the call
-    document.getElementById("btnStartAudio").addEventListener("click", () => {
-      
-      // 1. Start the visual canvas audio engine (Bulletproof native method)
-      if (window.getAudioContext && window.getAudioContext().state === 'suspended') {
-        window.getAudioContext().resume();
-      } else if (typeof userStartAudio === 'function') {
-        userStartAudio(); // Fallback for p5
-      }
-      
-      // 2. Start the actual WebRTC network connection
-      if (typeof startCall === 'function') {
-        startCall();
-      } else {
-        console.error("CRITICAL ERROR: startCall() is not defined. Check your console for other red errors!");
-        document.getElementById("callStatus").textContent = "Error: Connection script missing.";
-      }
-      
-    });
+  startBtn.addEventListener("click", async () => {
+
+  startBtn.disabled = true;
+
+  if (window.getAudioContext && window.getAudioContext().state === "suspended") {
+    await window.getAudioContext().resume();
+  }
+
+  if (typeof userStartAudio === "function") {
+    await userStartAudio();
+  }
+
+  if (typeof startCall === "function") {
+    startCall();
+  } else {
+    console.error("startCall not found");
+    const el = document.getElementById("callStatus");
+    if (el) el.textContent = "Connection script missing.";
+  }
+
+});
+
+if (startBtn) {
+  startBtn.addEventListener("click", async () => {
+
+    // unlock p5 audio
+    if (window.getAudioContext && window.getAudioContext().state === "suspended") {
+      await window.getAudioContext().resume();
+    }
+
+    if (typeof userStartAudio === "function") {
+      await userStartAudio();
+    }
+
+    // start WebRTC call
+    if (typeof startCall === "function") {
+      startCall();
+    } else {
+      console.error("startCall not found");
+      const el = document.getElementById("callStatus");
+      if (el) el.textContent = "Connection script missing.";
+    }
+
+  });
+}
   </script>
 </body>
 </html>

@@ -1,12 +1,10 @@
-// js/result-call.js
-
 let pc = null;
 let localStream = null;
 let sessionRef = null;
-let myRole = null; 
+let myRole = null;
 let micMuted = false;
 
-const statusEl = document.getElementById("callStatus");
+const callStatusEl = document.getElementById("callStatus");
 const remoteAudio = document.getElementById("remoteAudio");
 const remoteCanvasVideo = document.getElementById("remoteCanvasStream");
 
@@ -15,7 +13,7 @@ const btnMute = document.getElementById("btnMute");
 const btnHangup = document.getElementById("btnHangup");
 
 function setStatus(msg) {
-  if (statusEl) statusEl.textContent = `Status: ${msg}`;
+  if (callStatusEl) callStatusEl.textContent = `Status: ${msg}`;
   console.log(msg);
 }
 
@@ -43,12 +41,13 @@ async function assignRole(db, code, uid) {
   const participantsRef = db.ref(`sessions/${code}/call/participants`);
   await participantsRef.transaction((p) => {
     p = p || {};
-    if (p[uid]) return p; 
+    if (p[uid]) return p;
     const count = Object.keys(p).length;
     const role = (count === 0) ? "host" : "guest";
     p[uid] = { role, joinedAt: Date.now() };
     return p;
   });
+
   const snap = await participantsRef.child(`${uid}/role`).get();
   return snap.val() || "guest";
 }
@@ -64,9 +63,11 @@ async function initPeerConnection(db, code) {
     if (track.kind === "audio") {
       remoteAudio.srcObject = stream;
       setStatus("Remote audio connected");
-    } else if (track.kind === "video") {
+    }
+
+    if (track.kind === "video") {
       remoteCanvasVideo.srcObject = stream;
-      remoteCanvasVideo.play().catch(e => console.warn("Video play blocked:", e));
+      remoteCanvasVideo.play().catch(() => {});
       setStatus("Remote canvas connected");
     }
   };
@@ -86,25 +87,24 @@ async function initPeerConnection(db, code) {
     setStatus("Mic denied or unavailable");
   }
 
-  // Find the canvas created by p5.js
   const localCanvas = document.querySelector(".p5Canvas");
+
   if (localCanvas) {
     try {
-      const canvasStream = localCanvas.captureStream(30); 
+      const canvasStream = localCanvas.captureStream(30);
       canvasStream.getTracks().forEach(track => {
         pc.addTrack(track, canvasStream);
       });
       setStatus("Mic & Canvas streaming");
-    } catch(e) {
+    } catch (e) {
       console.error("Canvas capture error:", e);
     }
-  } else {
-    console.warn("p5 canvas not found. Make sure sketch.js is loading correctly.");
   }
 }
 
 async function hostFlow() {
-  setStatus("host: creating offer…");
+  setStatus("host creating offer");
+
   await sessionRef.child("offer").remove();
   await sessionRef.child("answer").remove();
   await sessionRef.child("hostCandidates").remove();
@@ -112,38 +112,37 @@ async function hostFlow() {
 
   const offer = await pc.createOffer();
   await pc.setLocalDescription(offer);
+
   await sessionRef.child("offer").set({
     type: offer.type,
     sdp: offer.sdp,
     ts: Date.now()
   });
 
-  setStatus("host: waiting for guest…");
-
   sessionRef.child("answer").on("value", async (snap) => {
     const ans = snap.val();
-    if (!ans || !pc || pc.currentRemoteDescription) return;
+    if (!ans || pc.currentRemoteDescription) return;
     await pc.setRemoteDescription(new RTCSessionDescription(ans));
-    setStatus("call live");
+    setStatus("Call live");
   });
 
   sessionRef.child("guestCandidates").on("child_added", async (snap) => {
     const cand = snap.val();
-    if (!cand || !pc) return;
-    try { await pc.addIceCandidate(new RTCIceCandidate(cand)); }
-    catch (e) { console.warn("addIceCandidate failed", e); }
+    if (!cand) return;
+    try {
+      await pc.addIceCandidate(new RTCIceCandidate(cand));
+    } catch {}
   });
 }
 
 async function guestFlow() {
-  setStatus("guest: waiting for offer…");
+  setStatus("Waiting for host");
 
   sessionRef.child("offer").on("value", async (snap) => {
     const offer = snap.val();
-    if (!offer || !pc || pc.currentRemoteDescription) return;
+    if (!offer || pc.currentRemoteDescription) return;
 
     await pc.setRemoteDescription(new RTCSessionDescription(offer));
-    setStatus("guest: sending answer…");
 
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
@@ -154,14 +153,15 @@ async function guestFlow() {
       ts: Date.now()
     });
 
-    setStatus("call live");
+    setStatus("Call live");
   });
 
-  sessionRef.child("guestCandidates").on("child_added", async (snap) => {
+  sessionRef.child("hostCandidates").on("child_added", async (snap) => {
     const cand = snap.val();
-    if (!cand || !pc) return;
-    try { await pc.addIceCandidate(new RTCIceCandidate(cand)); }
-    catch (e) { console.warn("addIceCandidate failed", e); }
+    if (!cand) return;
+    try {
+      await pc.addIceCandidate(new RTCIceCandidate(cand));
+    } catch {}
   });
 }
 
@@ -172,10 +172,9 @@ function setButtons(inCall) {
 }
 
 async function startCall() {
-  setStatus("signing in…");
   const code = (window.__PULSE_SESSION__ || "").trim();
   if (!code) {
-    setStatus("missing session code");
+    setStatus("Missing session code");
     return;
   }
 
@@ -183,9 +182,8 @@ async function startCall() {
     const user = await ensureAnonAuth();
     const db = firebase.database();
 
-    setStatus("assigning role…");
     myRole = await assignRole(db, code, user.uid);
-    
+
     await initPeerConnection(db, code);
     setButtons(true);
 
@@ -194,7 +192,7 @@ async function startCall() {
 
   } catch (err) {
     console.error(err);
-    setStatus("error: " + err.message);
+    setStatus("Error starting call");
     setButtons(false);
   }
 }
@@ -203,28 +201,19 @@ function toggleMute() {
   if (!localStream) return;
   micMuted = !micMuted;
   localStream.getAudioTracks().forEach(t => (t.enabled = !micMuted));
-  if (btnMute) btnMute.textContent = micMuted ? "Unmute Mic" : "Mute Mic";
+  btnMute.textContent = micMuted ? "Unmute Mic" : "Mute Mic";
 }
 
 async function hangUp() {
-  setStatus("ending call…");
-  try {
-    if (pc) {
-      pc.close();
-      pc = null;
-    }
-    if (localStream) {
-      localStream.getTracks().forEach(t => t.stop());
-      localStream = null;
-    }
-    if (remoteAudio) remoteAudio.srcObject = null;
-    if (remoteCanvasVideo) remoteCanvasVideo.srcObject = null;
-  } catch (e) {
-    console.warn(e);
-  }
+  if (pc) pc.close();
+  if (localStream) localStream.getTracks().forEach(t => t.stop());
+
+  if (remoteAudio) remoteAudio.srcObject = null;
+  if (remoteCanvasVideo) remoteCanvasVideo.srcObject = null;
+
   setButtons(false);
-  setStatus("idle");
+  setStatus("Idle");
 }
 
-if (btnMute) btnMute.addEventListener("click", toggleMute);
-if (btnHangup) btnHangup.addEventListener("click", hangUp);
+btnMute?.addEventListener("click", toggleMute);
+btnHangup?.addEventListener("click", hangUp);
