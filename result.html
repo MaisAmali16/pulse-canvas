@@ -1,253 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Result – Pulse Canvas</title>
-  <link rel="stylesheet" href="css/style.css">
-  <style>
-    /* 1. Immersive Fullscreen Body */
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden; /* Removes scrollbars for a pure app feel */
-      background: #000;
-      font-family: 'Courier New', Courier, monospace;
-    }
+<meta charset="utf-8" />
+<title>Result – Pulse Canvas</title>
+<link rel="stylesheet" href="css/style.css">
 
-    /* 2. Edge-to-Edge Art Container */
-    .art-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1;
-    }
-    #remoteCanvasStream {
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
-      background: black;
-      display: block;
-    }
-    #defaultCanvas0 {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-      z-index: -100;
-    }
+<style>
+body{
+margin:0;
+padding:0;
+width:100vw;
+height:100vh;
+overflow:hidden;
+background:#000;
+font-family:'Courier New',Courier,monospace;
+}
 
-    .p5Canvas {
-      opacity: 0;
-      pointer-events: none;
-      position: absolute;
-      z-index: -100;
-    }
+.art-container{
+position:absolute;
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+z-index:1;
+}
 
-    /* 3. Floating Overlay UI */
-    .ui-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 10;
-      pointer-events: none; /* Lets clicks pass through the empty space to the canvas */
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-      box-sizing: border-box;
-    }
+#remoteCanvasStream{
+width:100vw;
+height:100vh;
+object-fit:contain;
+background:black;
+display:block;
+}
 
-    .ui-element {
-      pointer-events: auto; /* Re-enables clicks for buttons and text */
-    }
+#defaultCanvas0{
+position:absolute;
+opacity:0;
+pointer-events:none;
+z-index:-100;
+}
 
-    /* 4. Top Bar: Sleek Topic Pill */
-    .top-bar {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .topic-pill {
-      background: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(5px);
-      padding: 12px 25px;
-      border-radius: 30px;
-      text-align: center;
-      max-width: 80%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    }
-    .topic-pill h2 {
-      margin: 0 0 4px 0;
-      font-size: 0.65rem;
-      color: #aaa;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-    #topicText {
-      font-size: 1.1rem;
-      color: #fff;
-      margin: 0;
-    }
-    #callStatus {
-      background: rgba(0, 0, 0, 0.5);
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      color: #aaa;
-      margin: 0;
-    }
+.p5Canvas{
+opacity:0;
+pointer-events:none;
+position:absolute;
+z-index:-100;
+}
 
-    /* 5. Bottom Bar: Floating Controls */
-    .bottom-bar {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .controls-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    
-    /* Overlay Button Tweaks */
-    .btn-overlay {
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(4px);
-    }
-    .btn-overlay:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.1);
-    }
-    .btn-primary {
-      background: rgba(255, 255, 255, 0.9);
-      color: #000;
-      border: none;
-      font-weight: bold;
-    }
-    .btn-primary:hover:not(:disabled) {
-      background: #fff;
-      transform: scale(1.05);
-    }
-  </style>
+.ui-layer{
+position:absolute;
+top:0;
+left:0;
+width:100vw;
+height:100vh;
+z-index:10;
+pointer-events:none;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+padding:20px;
+box-sizing:border-box;
+}
+
+.ui-element{
+pointer-events:auto;
+}
+
+.top-bar{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:10px;
+margin-top:10px;
+}
+
+.topic-pill{
+background:rgba(0,0,0,0.6);
+border:1px solid rgba(255,255,255,0.15);
+backdrop-filter:blur(5px);
+padding:12px 25px;
+border-radius:30px;
+text-align:center;
+max-width:80%;
+box-shadow:0 4px 15px rgba(0,0,0,0.5);
+}
+
+.topic-pill h2{
+margin:0 0 4px 0;
+font-size:0.65rem;
+color:#aaa;
+text-transform:uppercase;
+letter-spacing:2px;
+}
+
+#topicText{
+font-size:1.1rem;
+color:#fff;
+margin:0;
+}
+
+#callStatus{
+background:rgba(0,0,0,0.5);
+padding:4px 12px;
+border-radius:12px;
+font-size:0.8rem;
+color:#aaa;
+margin:0;
+}
+
+.bottom-bar{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:12px;
+margin-bottom:20px;
+}
+
+.controls-row{
+display:flex;
+gap:12px;
+flex-wrap:wrap;
+justify-content:center;
+}
+
+.btn-overlay{
+background:rgba(0,0,0,0.7);
+border:1px solid rgba(255,255,255,0.3);
+backdrop-filter:blur(4px);
+}
+
+.btn-overlay:hover:not(:disabled){
+background:rgba(255,255,255,0.1);
+}
+
+.btn-primary{
+background:rgba(255,255,255,0.9);
+color:#000;
+border:none;
+font-weight:bold;
+}
+
+.btn-primary:hover:not(:disabled){
+background:#fff;
+transform:scale(1.05);
+}
+</style>
 </head>
+
 <body>
 
-  <div class="art-container">
-    <video id="remoteCanvasStream" autoplay playsinline></video>
-  </div>
-  <audio id="remoteAudio" autoplay playsinline style="display: none;"></audio>
+<div class="art-container">
+<video id="remoteCanvasStream" autoplay playsinline muted></video>
+</div>
 
-  <div class="ui-layer">
-    
-    <div class="top-bar ui-element">
-      <div class="topic-pill">
-        <h2>Conversation Topic</h2>
-        <div id="topicText">Loading topic…</div>
-      </div>
-      <p id="callStatus">Status: idle</p>
-      <div id="sensorBox" class="ui-element"></div> 
-    </div>
+<audio id="remoteAudio" autoplay playsinline style="display:none;"></audio>
 
-    <div class="bottom-bar ui-element">
-      <div class="controls-row">
-        <button id="btnStartAudio" class="btn btn-primary">Start Connection</button>
-        <button id="btnMute" class="btn btn-overlay" disabled>Mute Mic</button>
-        <button id="btnHangup" class="btn btn-overlay" style="color: #ff5555; border-color: rgba(255,85,85,0.4);" disabled>Hang Up</button>
-      </div>
-      <div class="controls-row" style="margin-top: 5px;">
-        <a href="conversation.html" class="btn btn-overlay" style="font-size: 0.8rem; padding: 6px 15px;">Tips</a>
-        <a href="index.html" class="btn btn-overlay" style="font-size: 0.8rem; padding: 6px 15px;">Leave</a>
-      </div>
-    </div>
+<div class="ui-layer">
 
-  </div>
+<div class="top-bar ui-element">
+<div class="topic-pill">
+<h2>Conversation Topic</h2>
+<div id="topicText">Loading topic…</div>
+</div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="js/firebase.js"></script>
-  <script src="js/auth.js"></script>
+<p id="callStatus">Status: idle</p>
+<div id="sensorBox" class="ui-element"></div>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/addons/p5.sound.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+<div class="bottom-bar ui-element">
+<div class="controls-row">
+<button id="btnStartAudio" class="btn btn-primary">Start Connection</button>
+<button id="btnMute" class="btn btn-overlay" disabled>Mute Mic</button>
+<button id="btnHangup" class="btn btn-overlay" style="color:#ff5555;border-color:rgba(255,85,85,0.4);" disabled>Hang Up</button>
+</div>
 
-  <script src="js/sketch.js"></script> 
-  <script src="js/result-call.js"></script>
+<div class="controls-row" style="margin-top:5px;">
+<a href="conversation.html" class="btn btn-overlay" style="font-size:0.8rem;padding:6px 15px;">Tips</a>
+<a href="index.html" class="btn btn-overlay" style="font-size:0.8rem;padding:6px 15px;">Leave</a>
+</div>
+</div>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const session = params.get("session") || "";
-    window.__PULSE_SESSION__ = session;
+</div>
 
-    // Fetch and display the topic directly from the database!
-    if (session) {
-      const topicRef = firebase.database().ref(`sessions/${session}/topic`);
-      topicRef.on("value", (snap) => {
-        const topicData = snap.val();
-        if (topicData && topicData.text) {
-          const topicTextEl = document.getElementById("topicText");
-          if (topicTextEl) topicTextEl.textContent = topicData.text;
-        }
-      });
-    }
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
 
-  startBtn.addEventListener("click", async () => {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/addons/p5.sound.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 
-  startBtn.disabled = true;
+<script src="js/sketch.js"></script>
+<script src="js/result-call.js"></script>
 
-  if (window.getAudioContext && window.getAudioContext().state === "suspended") {
-    await window.getAudioContext().resume();
-  }
+<script>
+const params=new URLSearchParams(window.location.search);
+const session=params.get("session")||"";
+window.__PULSE_SESSION__=session;
 
-  if (typeof userStartAudio === "function") {
-    await userStartAudio();
-  }
+if(session){
+const topicRef=firebase.database().ref(`sessions/${session}/topic`);
+topicRef.on("value",(snap)=>{
+const topicData=snap.val();
+if(topicData&&topicData.text){
+const topicTextEl=document.getElementById("topicText");
+if(topicTextEl)topicTextEl.textContent=topicData.text;
+}
+});
+}
 
-  if (typeof startCall === "function") {
-    startCall();
-  } else {
-    console.error("startCall not found");
-    const el = document.getElementById("callStatus");
-    if (el) el.textContent = "Connection script missing.";
-  }
+const startBtn=document.getElementById("btnStartAudio");
+
+if(startBtn){
+startBtn.addEventListener("click",async()=>{
+
+startBtn.disabled=true;
+
+if(window.getAudioContext&&window.getAudioContext().state==="suspended"){
+await window.getAudioContext().resume();
+}
+
+if(typeof userStartAudio==="function"){
+await userStartAudio();
+}
+
+if(typeof startCall==="function"){
+startCall();
+}else{
+console.error("startCall not found");
+const el=document.getElementById("callStatus");
+if(el)el.textContent="Connection script missing.";
+}
 
 });
-
-if (startBtn) {
-  startBtn.addEventListener("click", async () => {
-
-    // unlock p5 audio
-    if (window.getAudioContext && window.getAudioContext().state === "suspended") {
-      await window.getAudioContext().resume();
-    }
-
-    if (typeof userStartAudio === "function") {
-      await userStartAudio();
-    }
-
-    // start WebRTC call
-    if (typeof startCall === "function") {
-      startCall();
-    } else {
-      console.error("startCall not found");
-      const el = document.getElementById("callStatus");
-      if (el) el.textContent = "Connection script missing.";
-    }
-
-  });
 }
-  </script>
+</script>
+
 </body>
 </html>
