@@ -256,6 +256,8 @@ function updateFusion() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  let c = createCanvas(windowWidth, windowHeight);
+  c.style("z-index", "1");
   background(5, 8, 20);
   smooth();
 
@@ -267,6 +269,7 @@ function setup() {
   let connectBtn = createButton("Connect Heart Sensor");
   connectBtn.position(20, 20);
   connectBtn.mousePressed(connectSerial);
+  connectBtn.style("z-index", "1000");
 
   fft = new p5.FFT(0.8, 2048);
   fft.setInput(mic);

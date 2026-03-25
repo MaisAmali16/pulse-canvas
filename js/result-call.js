@@ -39,11 +39,14 @@ async function ensureAnonAuth() {
 
 async function assignRole(db, code, uid) {
   const participantsRef = db.ref(`sessions/${code}/call/participants`);
+
   await participantsRef.transaction((p) => {
     p = p || {};
     if (p[uid]) return p;
+
     const count = Object.keys(p).length;
-    const role = (count === 0) ? "host" : "guest";
+    const role = count === 0 ? "host" : "guest";
+
     p[uid] = { role, joinedAt: Date.now() };
     return p;
   });
@@ -61,20 +64,33 @@ async function initPeerConnection(db, code) {
     const stream = event.streams[0];
 
     if (track.kind === "audio") {
-      remoteAudio.srcObject = stream;
+      if (remoteAudio) {
+        remoteAudio.srcObject = stream;
+        remoteAudio.autoplay = true;
+      }
       setStatus("Remote audio connected");
     }
 
     if (track.kind === "video") {
-      remoteCanvasVideo.srcObject = stream;
-      remoteCanvasVideo.play().catch(() => {});
+      if (remoteCanvasVideo) {
+        remoteCanvasVideo.srcObject = stream;
+
+        remoteCanvasVideo.onloadedmetadata = () => {
+          remoteCanvasVideo.play().catch(() => {});
+        };
+
+        remoteCanvasVideo.muted = true;
+        remoteCanvasVideo.autoplay = true;
+        remoteCanvasVideo.playsInline = true;
+      }
+
       setStatus("Remote canvas connected");
     }
   };
 
   pc.onicecandidate = (event) => {
     if (!event.candidate) return;
-    const candPath = (myRole === "host") ? "hostCandidates" : "guestCandidates";
+    const candPath = myRole === "host" ? "hostCandidates" : "guestCandidates";
     sessionRef.child(candPath).push(event.candidate.toJSON());
   };
 
@@ -87,19 +103,38 @@ async function initPeerConnection(db, code) {
     setStatus("Mic denied or unavailable");
   }
 
-  const localCanvas = document.querySelector(".p5Canvas");
+  // Retry until p5 canvas exists
+  let attempts = 0;
 
-  if (localCanvas) {
-    try {
-      const canvasStream = localCanvas.captureStream(30);
-      canvasStream.getTracks().forEach(track => {
-        pc.addTrack(track, canvasStream);
-      });
-      setStatus("Mic & Canvas streaming");
-    } catch (e) {
-      console.error("Canvas capture error:", e);
+  const tryCaptureCanvas = () => {
+    let localCanvas =
+      document.querySelector(".p5Canvas") ||
+      document.getElementById("defaultCanvas0");
+
+    if (localCanvas) {
+      try {
+        const canvasStream = localCanvas.captureStream(30);
+
+        canvasStream.getTracks().forEach(track => {
+          pc.addTrack(track, canvasStream);
+        });
+
+        setStatus("Mic & Canvas streaming");
+      } catch (e) {
+        console.error("Canvas capture error:", e);
+      }
+    } else {
+      attempts++;
+
+      if (attempts < 10) {
+        setTimeout(tryCaptureCanvas, 500);
+      } else {
+        console.warn("Canvas never appeared");
+      }
     }
-  }
+  };
+
+  tryCaptureCanvas();
 }
 
 async function hostFlow() {
@@ -122,6 +157,7 @@ async function hostFlow() {
   sessionRef.child("answer").on("value", async (snap) => {
     const ans = snap.val();
     if (!ans || pc.currentRemoteDescription) return;
+
     await pc.setRemoteDescription(new RTCSessionDescription(ans));
     setStatus("Call live");
   });
@@ -129,6 +165,7 @@ async function hostFlow() {
   sessionRef.child("guestCandidates").on("child_added", async (snap) => {
     const cand = snap.val();
     if (!cand) return;
+
     try {
       await pc.addIceCandidate(new RTCIceCandidate(cand));
     } catch {}
@@ -159,6 +196,7 @@ async function guestFlow() {
   sessionRef.child("hostCandidates").on("child_added", async (snap) => {
     const cand = snap.val();
     if (!cand) return;
+
     try {
       await pc.addIceCandidate(new RTCIceCandidate(cand));
     } catch {}
@@ -173,6 +211,7 @@ function setButtons(inCall) {
 
 async function startCall() {
   const code = (window.__PULSE_SESSION__ || "").trim();
+
   if (!code) {
     setStatus("Missing session code");
     return;
@@ -187,8 +226,11 @@ async function startCall() {
     await initPeerConnection(db, code);
     setButtons(true);
 
-    if (myRole === "host") await hostFlow();
-    else await guestFlow();
+    if (myRole === "host") {
+      await hostFlow();
+    } else {
+      await guestFlow();
+    }
 
   } catch (err) {
     console.error(err);
@@ -199,9 +241,13 @@ async function startCall() {
 
 function toggleMute() {
   if (!localStream) return;
+
   micMuted = !micMuted;
   localStream.getAudioTracks().forEach(t => (t.enabled = !micMuted));
-  btnMute.textContent = micMuted ? "Unmute Mic" : "Mute Mic";
+
+  if (btnMute) {
+    btnMute.textContent = micMuted ? "Unmute Mic" : "Mute Mic";
+  }
 }
 
 async function hangUp() {
