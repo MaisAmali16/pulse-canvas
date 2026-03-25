@@ -3,6 +3,7 @@ let localStream = null;
 let sessionRef = null;
 let myRole = null;
 let micMuted = false;
+let callStarted = false;
 
 const callStatusEl = document.getElementById("callStatus");
 const remoteAudio = document.getElementById("remoteAudio");
@@ -55,6 +56,34 @@ async function assignRole(db, code, uid) {
   return snap.val() || "guest";
 }
 
+async function waitForCanvas() {
+  return new Promise((resolve) => {
+    let tries = 0;
+
+    const check = () => {
+      const canvas =
+        document.querySelector(".p5Canvas") ||
+        document.getElementById("defaultCanvas0");
+
+      if (canvas && canvas.width > 0) {
+        resolve(canvas);
+        return;
+      }
+
+      tries++;
+      if (tries > 50) {
+        console.warn("Canvas never appeared");
+        resolve(null);
+        return;
+      }
+
+      setTimeout(check, 200);
+    };
+
+    check();
+  });
+}
+
 async function initPeerConnection(db, code) {
   sessionRef = db.ref(`sessions/${code}/call/webrtc`);
   pc = new RTCPeerConnection(RTC_CONFIG);
@@ -66,7 +95,9 @@ async function initPeerConnection(db, code) {
     if (track.kind === "audio") {
       if (remoteAudio) {
         remoteAudio.srcObject = stream;
+        remoteAudio.muted = false;
         remoteAudio.autoplay = true;
+        remoteAudio.playsInline = true;
       }
       setStatus("Remote audio connected");
     }
@@ -74,14 +105,13 @@ async function initPeerConnection(db, code) {
     if (track.kind === "video") {
       if (remoteCanvasVideo) {
         remoteCanvasVideo.srcObject = stream;
+        remoteCanvasVideo.muted = true;
+        remoteCanvasVideo.autoplay = true;
+        remoteCanvasVideo.playsInline = true;
 
         remoteCanvasVideo.onloadedmetadata = () => {
           remoteCanvasVideo.play().catch(() => {});
         };
-
-        remoteCanvasVideo.muted = true;
-        remoteCanvasVideo.autoplay = true;
-        remoteCanvasVideo.playsInline = true;
       }
 
       setStatus("Remote canvas connected");
@@ -94,6 +124,7 @@ async function initPeerConnection(db, code) {
     sessionRef.child(candPath).push(event.candidate.toJSON());
   };
 
+  // MIC
   try {
     localStream = await navigator.mediaDevices.getUserMedia(MIC_CONSTRAINTS);
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
@@ -103,42 +134,28 @@ async function initPeerConnection(db, code) {
     setStatus("Mic denied or unavailable");
   }
 
-  // Retry until p5 canvas exists
-  let attempts = 0;
+  // WAIT FOR P5 CANVAS
+  const localCanvas = await waitForCanvas();
 
-  const tryCaptureCanvas = () => {
-    let localCanvas =
-      document.querySelector(".p5Canvas") ||
-      document.getElementById("defaultCanvas0");
+  if (localCanvas) {
+    try {
+      const canvasStream = localCanvas.captureStream(30);
 
-    if (localCanvas) {
-      try {
-        const canvasStream = localCanvas.captureStream(30);
+      canvasStream.getTracks().forEach(track => {
+        pc.addTrack(track, canvasStream);
+      });
 
-        canvasStream.getTracks().forEach(track => {
-          pc.addTrack(track, canvasStream);
-        });
-
-        setStatus("Mic & Canvas streaming");
-      } catch (e) {
-        console.error("Canvas capture error:", e);
-      }
-    } else {
-      attempts++;
-
-      if (attempts < 10) {
-        setTimeout(tryCaptureCanvas, 500);
-      } else {
-        console.warn("Canvas never appeared");
-      }
+      setStatus("Mic & Canvas streaming");
+    } catch (e) {
+      console.error("Canvas capture error:", e);
     }
-  };
-
-  tryCaptureCanvas();
+  } else {
+    console.warn("Canvas not found");
+  }
 }
 
 async function hostFlow() {
-  setStatus("host creating offer");
+  setStatus("Host creating offer");
 
   await sessionRef.child("offer").remove();
   await sessionRef.child("answer").remove();
@@ -156,10 +173,15 @@ async function hostFlow() {
 
   sessionRef.child("answer").on("value", async (snap) => {
     const ans = snap.val();
-    if (!ans || pc.currentRemoteDescription) return;
+    if (!ans) return;
+    if (pc.currentRemoteDescription) return;
 
-    await pc.setRemoteDescription(new RTCSessionDescription(ans));
-    setStatus("Call live");
+    try {
+      await pc.setRemoteDescription(new RTCSessionDescription(ans));
+      setStatus("Call live");
+    } catch (e) {
+      console.warn("Answer already applied");
+    }
   });
 
   sessionRef.child("guestCandidates").on("child_added", async (snap) => {
@@ -177,9 +199,14 @@ async function guestFlow() {
 
   sessionRef.child("offer").on("value", async (snap) => {
     const offer = snap.val();
-    if (!offer || pc.currentRemoteDescription) return;
+    if (!offer) return;
+    if (pc.currentRemoteDescription) return;
 
-    await pc.setRemoteDescription(new RTCSessionDescription(offer));
+    try {
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
+    } catch {
+      return;
+    }
 
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
@@ -210,6 +237,9 @@ function setButtons(inCall) {
 }
 
 async function startCall() {
+  if (callStarted) return;
+  callStarted = true;
+
   const code = (window.__PULSE_SESSION__ || "").trim();
 
   if (!code) {

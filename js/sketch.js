@@ -255,9 +255,12 @@ function updateFusion() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
   let c = createCanvas(windowWidth, windowHeight);
+  c.style("position", "fixed");
+  c.style("top", "0");
+  c.style("left", "0");
   c.style("z-index", "1");
+
   background(5, 8, 20);
   smooth();
 
@@ -290,11 +293,9 @@ function setup() {
 
   lastGoodBpmMs = millis();
 
-  // Initialize display values
   displayBPM = bpm;
   displayVoiceIntensity = 0;
-  
-  // Hide any p5 sound indicators
+
   let cssEl = document.createElement("style");
   cssEl.innerHTML = `
     .p5-recorder-indicator, .p5-sound-recorder-indicator,
@@ -1546,14 +1547,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     startBtn.disabled = true;
 
+    // Start the visual experience
+    if (typeof started !== "undefined") {
+      started = true;
+    }
+
+    const startScreen = document.getElementById("startScreen");
+    if (startScreen) startScreen.style.display = "none";
+
+    // Resume AudioContext (required for browsers)
     if (window.getAudioContext && window.getAudioContext().state === "suspended") {
       await window.getAudioContext().resume();
     }
 
+    // Start p5 audio
     if (typeof userStartAudio === "function") {
       await userStartAudio();
     }
 
+    // Start microphone if available
+    if (window.mic && !window.mic.enabled) {
+      window.mic.start();
+    }
+
+    // Start the call
     if (typeof startCall === "function") {
       startCall();
     } else {
@@ -1561,6 +1578,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const el = document.getElementById("callStatus");
       if (el) el.textContent = "Connection script missing.";
     }
+
+    console.log("System fully started");
 
   });
 
