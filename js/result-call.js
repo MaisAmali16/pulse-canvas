@@ -281,11 +281,24 @@ function toggleMute() {
 }
 
 async function hangUp() {
-  if (pc) pc.close();
-  if (localStream) localStream.getTracks().forEach(t => t.stop());
+  if (pc) {
+    pc.getSenders().forEach(sender => {
+      try { pc.removeTrack(sender); } catch {}
+    });
+
+    pc.close();
+    pc = null;
+  }
+
+  if (localStream) {
+    localStream.getTracks().forEach(t => t.stop());
+    localStream = null;
+  }
 
   if (remoteAudio) remoteAudio.srcObject = null;
   if (remoteCanvasVideo) remoteCanvasVideo.srcObject = null;
+
+  callStarted = false;
 
   setButtons(false);
   setStatus("Idle");
