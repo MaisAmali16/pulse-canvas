@@ -253,6 +253,17 @@ async function startCall() {
 
     myRole = await assignRole(db, code, user.uid);
 
+    // Safety reset (prevents rare broken reconnections)
+    if (pc) {
+      try { pc.close(); } catch {}
+      pc = null;
+    }
+
+    if (localStream) {
+      localStream.getTracks().forEach(t => t.stop());
+      localStream = null;
+    }
+
     await initPeerConnection(db, code);
     setButtons(true);
 
