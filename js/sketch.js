@@ -125,22 +125,22 @@ let started = false;
 function computeArousalFromBpm(bpmValue) {
   let arousal, lvl;
 
-  // CHANGED RANGES (Hana's suggestion)
+  // Restored logical order with slightly wider calm
   if (bpmValue < 70) {
-    arousal = "neutral";
-    lvl = map(bpmValue, 50, 70, 0.2, 0.4, true);
+    arousal = "calm";
+    lvl = map(bpmValue, 50, 70, 0.0, 0.25, true);
 
   } else if (bpmValue < 85) {
-    arousal = "calm";
-    lvl = map(bpmValue, 70, 85, 0.0, 0.3, true);
+    arousal = "neutral";
+    lvl = map(bpmValue, 70, 85, 0.25, 0.5, true);
 
-  } else if (bpmValue < 115) {
+  } else if (bpmValue < 110) {
     arousal = "excited";
-    lvl = map(bpmValue, 85, 115, 0.5, 0.85, true);
+    lvl = map(bpmValue, 85, 110, 0.5, 0.85, true);
 
   } else {
     arousal = "panicked";
-    lvl = map(bpmValue, 115, 170, 0.85, 1.0, true);
+    lvl = map(bpmValue, 110, 170, 0.85, 1.0, true);
   }
 
   return { arousal, lvl: constrain(lvl, 0, 1) };
