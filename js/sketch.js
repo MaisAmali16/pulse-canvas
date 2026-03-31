@@ -125,18 +125,22 @@ let started = false;
 function computeArousalFromBpm(bpmValue) {
   let arousal, lvl;
 
-  if (bpmValue < 65) {
-    arousal = "calm";
-    lvl = map(bpmValue, 40, 65, 0.0, 0.33, true);
-  } else if (bpmValue < 85) {
+  // CHANGED RANGES (Hana's suggestion)
+  if (bpmValue < 70) {
     arousal = "neutral";
-    lvl = map(bpmValue, 65, 85, 0.33, 0.66, true);
-  } else if (bpmValue < 110) {
+    lvl = map(bpmValue, 50, 70, 0.2, 0.4, true);
+
+  } else if (bpmValue < 85) {
+    arousal = "calm";
+    lvl = map(bpmValue, 70, 85, 0.0, 0.3, true);
+
+  } else if (bpmValue < 115) {
     arousal = "excited";
-    lvl = map(bpmValue, 85, 110, 0.66, 0.9, true);
+    lvl = map(bpmValue, 85, 115, 0.5, 0.85, true);
+
   } else {
     arousal = "panicked";
-    lvl = map(bpmValue, 110, 160, 0.9, 1.0, true);
+    lvl = map(bpmValue, 115, 170, 0.85, 1.0, true);
   }
 
   return { arousal, lvl: constrain(lvl, 0, 1) };
